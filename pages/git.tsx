@@ -1,7 +1,6 @@
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
-
-declare var Module: any;
+import FileBrowserTable from '../components/file-browser-table'
 
 // async function initGit() {
 //   const lg = Module;
@@ -40,7 +39,7 @@ const GitPage: NextPage = () => {
 
   return (
     <div>
-      { isLoaded ? 'Loaded' : 'Loading' }
+      { isLoaded ? <FileBrowserTable /> : 'Loading' }
     </div>
   )
 }
