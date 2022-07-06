@@ -1,23 +1,11 @@
 import type { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import FileBrowserTable from '../components/file-browser-table'
-
-// async function initGit() {
-//   const lg = Module;
-//   const FS = Module.FS;
-//   const MEMFS = FS.filesystems.MEMFS;
-
-//   // FS.mkdir('/working');
-//   // FS.mount(MEMFS, {}, '/working');
-//   // FS.chdir('/working');
-
-//   // await lg.callMain(['clone', 'http://localhost/github/github/docs.git', 'testrepo']);
-
-//   // return FS.readdir('testrepo');
-// }
+import { FileBrowserEntry } from '../lib/types';
 
 const GitPage: NextPage = () => {
   const [ isLoaded, setLoaded ] = useState(false);
+  const [ files, setFiles ] = useState<FileBrowserEntry[]>([]);
 
   // instantiate webworker and set up message listener
   useEffect(() => {
@@ -28,6 +16,7 @@ const GitPage: NextPage = () => {
 
       console.log(data);
       if (data.command === 'ready') setLoaded(true);
+      if (data.command === 'readdir') setFiles(data.data);
 
     }, { signal: abortController.signal });
 
@@ -39,7 +28,7 @@ const GitPage: NextPage = () => {
 
   return (
     <div>
-      { isLoaded ? <FileBrowserTable /> : 'Loading' }
+      { isLoaded ? <FileBrowserTable data={files} /> : 'Loading' }
     </div>
   )
 }
