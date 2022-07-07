@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { FileBrowserEntry } from './types';
+import { FileBrowserCommandEvent, FileBrowserEntry, FileBrowserMessage, FileBrowserMessageEvent } from './types';
 
 // export empty object to force tsc to treat this as a module
 export default {};
@@ -10,6 +10,9 @@ self.Module = {
     return 'https://unpkg.com/wasm-git@0.0.8/' + s;
   }
 };
+
+// shadow postMessage with a type-safe version
+const postMessage = (message: FileBrowserMessage) => self.postMessage(message)
 
 importScripts('https://unpkg.com/wasm-git@0.0.8/lg2.js');
 
@@ -47,12 +50,17 @@ Module.onRuntimeInitialized = () => {
       .map(pathToEntry)
   });
 
-  const readme = FS.readFile('README.md', { encoding: 'utf8' });
-  // const files = FS.readdir('testrepo');
-  postMessage({
-    command: 'readfile',
-    fileName: 'README.md',
-    data: readme
+  self.addEventListener('message', ({data: msg}: FileBrowserCommandEvent) => {
+    switch (msg.command) {
+      case 'getFile':
+        const fileContents = FS.readFile(msg.fileName, { encoding: 'utf8' });
+        postMessage({
+          command: 'readfile',
+          fileName: 'README.md',
+          data: fileContents
+        });
+        break;
+    }
   });
 
   function pathToEntry(path: string): FileBrowserEntry {
