@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { useEffect, useRef, useState } from 'react'
 import FileBrowserTable from '../components/file-browser-table'
 import FileView from '../components/file-view';
+import GitPageLayout from '../components/git-page-layout';
 import { FileBrowserCommand, FileBrowserEntry, FileBrowserFile, FileBrowserMessage, FileBrowserMessageEvent } from '../lib/types';
 
 type State = FileBrowserEntry[] | FileBrowserFile
@@ -72,9 +73,9 @@ const GitPage: NextPage = () => {
   };
 
   if (isLoaded && isFiles(state)) {
-    return (<FileBrowserTable data={state} onEntryClick={onEntryClick} />)
+    return (<GitPageLayout><FileBrowserTable data={state} onEntryClick={onEntryClick} /></GitPageLayout>)
   } else if (isLoaded && isFile(state)) {
-    return (<FileView contents={state} />);
+    return (<GitPageLayout><FileView contents={state} /></GitPageLayout>);
   } else {
     return (<div>Loading...</div>)
   }

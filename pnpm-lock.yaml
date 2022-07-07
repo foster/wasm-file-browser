@@ -9,6 +9,7 @@ specifiers:
   autoprefixer: ^10.4.7
   eslint: 8.18.0
   eslint-config-next: 12.2.0
+  filesize: ^9.0.11
   luxon: ^2.4.0
   next: 12.2.0
   postcss: ^8.4.14
@@ -19,6 +20,7 @@ specifiers:
 
 dependencies:
   '@tanstack/react-table': 8.1.3_biqbaboplfbrettd7655fr4n2y
+  filesize: 9.0.11
   luxon: 2.4.0
   next: 12.2.0_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0
@@ -1074,6 +1076,11 @@ packages:
     dependencies:
       flat-cache: 3.0.4
     dev: true
+
+  /filesize/9.0.11:
+    resolution: {integrity: sha512-gTAiTtI0STpKa5xesyTA9hA3LX4ga8sm2nWRcffEa1L/5vQwb4mj2MdzMkoHoGv4QzfDshQZuYscQSf8c4TKOA==}
+    engines: {node: '>= 0.4.0'}
+    dev: false
 
   /fill-range/7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
