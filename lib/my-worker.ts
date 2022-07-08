@@ -30,7 +30,7 @@ Module.onRuntimeInitialized = () => {
   FS.chdir('/working');
 
   /* @ts-ignore */
-  lg.callMain(['clone', 'http://localhost:3000/github/foster/wasm-file-browser.git', 'testrepo']);
+  lg.callMain(['clone', 'http://localhost:3000/_github.com/foster/wasm-file-browser.git', 'testrepo']);
 
   postMessage({
     command: 'ready'
