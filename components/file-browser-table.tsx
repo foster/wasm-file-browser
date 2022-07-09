@@ -3,6 +3,7 @@ import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack
 import { DateTime } from 'luxon'
 import { EntryType, FileBrowserEntry, FileTableMeta, OnEntryClickFn } from '../lib/types';
 import Table from './table';
+import { FolderIcon, DocumentTextIcon } from '@heroicons/react/outline'
 
 const columns: ColumnDef<FileBrowserEntry>[] = [
   {
@@ -19,7 +20,7 @@ const columns: ColumnDef<FileBrowserEntry>[] = [
           return (
             <span className="hover:underline hover:cursor-pointer" onClick={() => onEntryClick(entry)}>
               {iconFor(entry.type)}
-              {info.getValue()}
+              <span className="align-middle">{info.getValue()}</span>
             </span>
           )
         },
@@ -39,8 +40,8 @@ const columns: ColumnDef<FileBrowserEntry>[] = [
 
 function iconFor(e: EntryType) {
   switch (e) {
-    case 'file': return <span>[F]</span>
-    case 'directory': return <span>[D]</span>
+    case 'file': return <DocumentTextIcon className="h-5 w-5 inline-block mr-1" />
+    case 'directory': return <FolderIcon className="h-5 w-5 inline-block mr-1" />
   }
 }
 
