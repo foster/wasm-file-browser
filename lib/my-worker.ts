@@ -43,13 +43,6 @@ Module.onRuntimeInitialized = () => {
     data: FS.cwd()
   });
 
-  postMessage({
-    command: 'readdir',
-    data: FS.readdir('.')
-      .filter((entry: string) => !entry.startsWith('.'))
-      .map(pathToEntry)
-  });
-
   self.addEventListener('message', ({data: msg}: FileBrowserCommandEvent) => {
     switch (msg.command) {
       case 'getFile':
@@ -60,16 +53,32 @@ Module.onRuntimeInitialized = () => {
           data: fileContents
         });
         break;
+      case 'getDir':
+        const fs = FS
+        const {path, node} = FS.lookupPath(msg.dirName)
+        console.log(`listing ${path}`)
+
+        postMessage({
+          command: 'readdir',
+          data: fs.readdir(msg.dirName)
+            .filter((entry: string) => !entry.startsWith('.'))
+            .map((entryName: string) => {
+              const relativePath = msg.dirName !== '.' ? `${msg.dirName}/${entryName}` : entryName
+              const fullPath = `${path}/${entryName}`
+              return pathToEntry(entryName, relativePath, fullPath)
+            })
+        });
+        break;
     }
   });
 
-  function pathToEntry(path: string): FileBrowserEntry {
-    const fs = FS;
-    const { mode } = FS.lookupPath(path).node;
+  function pathToEntry(entryName: string, relativePath: string, fullPath: string): FileBrowserEntry {
+    const { node: { mode } } = FS.lookupPath(relativePath)
     const isFile = FS.isFile(mode);
-    const {date, messageFirst: message} = getPathHistory(path)
+    const {date, messageFirst: message} = getPathHistory(relativePath)
     return {
-      name: path,
+      name: entryName,
+      relativePath,
       type: isFile ? 'file' : 'directory',
       modified: date,
       message: message
@@ -78,10 +87,10 @@ Module.onRuntimeInitialized = () => {
 
   function getPathHistory(path: string): ParsedCommit {
     const log = lg.callWithOutput(['log', '-n 1', '--', path]);
+    console.log('log', '--', path, '--', log)
     return parseCommitLog(log);
   }
 }
-
 
 type ParsedCommit = {
   commitId: string;
@@ -95,7 +104,7 @@ function parseCommitLog(logMessage: string): ParsedCommit {
   const DATE_FORMAT = 'EEE MMM dd HH:mm:ss yyyy ZZZ';
 
   if (logAsArray.length < 5)
-    throw new Error(`Invalid logMessage format. Expected at least 5 lines: $logMessage`);
+    throw new Error(`Invalid logMessage format. Expected at least 5 lines: ${logMessage}`);
 
   // the wasm-git log output pads day-of-month with a space
   // this regex replaces the space with a 0 to make it compatible with the luxon parser

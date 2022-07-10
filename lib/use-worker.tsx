@@ -5,6 +5,7 @@ type WorkerCallbackFn = (msg: FileBrowserMessage) => void
 type WorkerCommandFn = (command: FileBrowserCommand) => void
 
 export interface WorkerClient {
+  isReady: boolean
   sendCommand: WorkerCommandFn
 }
 
@@ -19,6 +20,7 @@ type WorkerProviderProps = {
   children: React.ReactElement
 }
 const WorkerProvider: React.FC<WorkerProviderProps> = ({children}) => {
+  const [isReady, setReady] = useState(false)
   const workerRef = useRef<Worker | null>(null)
   const subscribers = useRef<WorkerCallbackFn[]>([])
 
@@ -28,12 +30,14 @@ const WorkerProvider: React.FC<WorkerProviderProps> = ({children}) => {
       const worker = workerRef.current = new Worker(new URL('./my-worker.ts', import.meta.url))
       
       worker.addEventListener('message', ({data: msg}: FileBrowserMessageEvent) => {
+        if (msg.command === 'ready') setReady(true)
         subscribers.current.forEach(cb => cb(msg))
       })
     }
   }, [])
 
   const impl: WorkerClientInternal = {
+    isReady,
     sendCommand(command: FileBrowserCommand) {
       workerRef.current?.postMessage(command)
     },
@@ -64,5 +68,8 @@ export default function useWorker(callback: WorkerCallbackFn): WorkerClient {
     }
   }, [])
 
-  return workerClient
-}                                                                                                                
+  return {
+    isReady: workerClient.isReady,
+    sendCommand: workerClient.sendCommand
+  }
+}

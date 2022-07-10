@@ -2,6 +2,7 @@ export type EntryType = 'file' | 'directory'
 
 export type FileBrowserEntry = {
   name: string
+  relativePath: string
   type: EntryType
   message: string
   modified: number // milliseconds since epoch (Date does not serialize correctly)
@@ -54,11 +55,17 @@ export type FileBrowserMessageEvent = MessageEvent<FileBrowserMessage>
 
 export type FileBrowserFile = string
 
-export type FileBrowserReadFileCommand = {
+export type FileBrowserGetFileCommand = {
   command: 'getFile'
   fileName: string
 }
 
+export type FileBrowserGetDirCommand = {
+  command: 'getDir'
+  dirName: string
+}
+
 export type FileBrowserCommand =
-  | FileBrowserReadFileCommand
+  | FileBrowserGetFileCommand
+  | FileBrowserGetDirCommand
 export type FileBrowserCommandEvent = MessageEvent<FileBrowserCommand>

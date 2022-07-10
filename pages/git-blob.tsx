@@ -1,15 +1,16 @@
 import type { NextPage } from 'next'
-import { useEffect, useRef, useState } from 'react'
-import FileBrowserTable from '../components/file-browser-table'
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react'
 import FileView from '../components/file-view';
 import GitPageLayout from '../components/git-page-layout';
-import { FileBrowserCommand, FileBrowserEntry, FileBrowserFile, FileBrowserMessage, FileBrowserMessageEvent } from '../lib/types';
+import { FileBrowserFile, FileBrowserMessage } from '../lib/types';
 import useWorker from '../lib/use-worker';
 
 const GitBlobPage: NextPage = () => {
   const [ isLoaded, setLoaded ] = useState(false);
   const [ state, setState ] = useState<FileBrowserFile>("");
-  const workerRef = useRef<Worker | null>(null);
+
+  const router = useRouter()
 
   // instantiate webworker and set up message listener
   const workerClient = useWorker((msg: FileBrowserMessage) => {
@@ -19,14 +20,21 @@ const GitBlobPage: NextPage = () => {
         setState(msg.data)
         break;
       default:
-        console.log(`Unexpected message: ${msg}`)
+        console.log('Unexpected message:', msg)
     }
   })
 
+  // when webworker is ready, send a 'readFile' command
   useEffect(() => {
-    // obviously setTimeout is a hack and useWorker should have an onReady hook
-    setTimeout(() => workerClient.sendCommand({command: 'getFile', fileName: 'README.md'}), 2000)
-  }, [])
+    if (workerClient.isReady) {
+      // this page is accessed under the route alias /{provider}/{owner}/{repo}/blob/{:path}
+      // slice off the first several parts of the path: ['/github', '/owner', '/repo', '/blob']
+      const filePath = router.asPath.split('/').slice(5).join('/')
+
+      console.log('sending readFile command for $filePath')
+      workerClient.sendCommand({command: 'getFile', fileName: filePath})
+    }
+  }, [workerClient])
 
   if (isLoaded) {
     return (

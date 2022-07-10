@@ -1,5 +1,5 @@
 import React from 'react'
-import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
+import { ColumnDef, useReactTable, getCoreRowModel } from '@tanstack/react-table'
 import { DateTime } from 'luxon'
 import { EntryType, FileBrowserEntry, FileTableMeta, OnEntryClickFn } from '../lib/types';
 import Table from './table';
