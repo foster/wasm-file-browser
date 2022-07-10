@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react'
+import Breadcrumbs from '../components/breadcrumbs';
 import FileContentsView from '../components/file-contents';
 import FileSummary from '../components/file-summary';
 import GitPageLayout from '../components/git-page-layout';
@@ -8,12 +9,12 @@ import { CommitSummary, FileBrowserMessage } from '../lib/types';
 import useWorker from '../lib/use-worker';
 
 type State = {
-  commit?: CommitSummary,
+  path: string[]
+  commit: CommitSummary
   contents: string
 }
 const GitBlobPage: NextPage = () => {
-  const [ isLoaded, setLoaded ] = useState(false);
-  const [ state, setState ] = useState<State>({ commit: undefined, contents: '' });
+  const [ state, setState ] = useState<State | null>(null);
 
   const router = useRouter()
 
@@ -21,8 +22,7 @@ const GitBlobPage: NextPage = () => {
   const [isWorkerReady, sendCommand] = useWorker((msg: FileBrowserMessage) => {
     switch (msg.command) {
       case 'readfile':
-        setLoaded(true)
-        setState(msg.data)
+        setState({ path: msg.fileName.split('/'), ...msg.data })
         break;
       default:
         console.log('Unexpected message:', msg)
@@ -41,10 +41,11 @@ const GitBlobPage: NextPage = () => {
     }
   }, [isWorkerReady, router])
 
-  if (isLoaded) {
+  if (state !== null) {
     return (
       <GitPageLayout>
-        <FileSummary commit={state.commit!} />
+        <Breadcrumbs pathSegments={state.path} />
+        <FileSummary commit={state.commit} />
         <div className="mb-5"></div>
         <FileContentsView contents={state.contents} />
       </GitPageLayout>

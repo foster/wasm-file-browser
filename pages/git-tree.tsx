@@ -1,22 +1,25 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react'
+import Breadcrumbs from '../components/breadcrumbs';
 import FileBrowserTable from '../components/file-browser-table'
 import GitPageLayout from '../components/git-page-layout';
 import { FileBrowserEntry, FileBrowserMessage } from '../lib/types';
 import useWorker from '../lib/use-worker';
 
+type State = {
+  path: string[]
+  entries: FileBrowserEntry[]
+}
 const GitTreePage: NextPage = () => {
-  const [ state, setState ] = useState<FileBrowserEntry[]>([]);
+  const [ state, setState ] = useState<State | null>();
   const router = useRouter()
 
   // instantiate webworker and set up message listener
   const [isReady, sendCommand ] = useWorker((msg: FileBrowserMessage) => {
     switch (msg.command) {
-      case 'cwd':
-        break
       case 'readdir':
-        setState(msg.data)
+        setState({ path: msg.dirName.split('/'), entries: msg.data })
         break;
       default:
         console.log('Unexpected message:', msg)
@@ -55,10 +58,11 @@ const GitTreePage: NextPage = () => {
     }
   };
 
-  if (isReady) {
+  if (isReady && state) {
     return (
       <GitPageLayout>
-        <FileBrowserTable data={state} onEntryClick={onEntryClick} />
+        {(state.path.length > 1) ? <Breadcrumbs pathSegments={state.path} /> : <></>}
+        <FileBrowserTable data={state.entries} onEntryClick={onEntryClick} />
       </GitPageLayout>
     )
   } else {

@@ -24,47 +24,45 @@ Module.onRuntimeInitialized = () => {
   /* @ts-ignore */
   const FS = Module.FS as any;
 
-  FS.mkdir('/working');
+  const ROOT_DIR_NAME = '/working'
+  FS.mkdir(ROOT_DIR_NAME);
   /* @ts-ignore */
-  FS.mount(MEMFS, {}, '/working');
-  FS.chdir('/working');
+  FS.mount(MEMFS, {}, ROOT_DIR_NAME);
+  FS.chdir(ROOT_DIR_NAME);
 
   /* @ts-ignore */
-  lg.callMain(['clone', 'http://localhost:3000/_github.com/foster/wasm-file-browser.git', 'testrepo']);
+  lg.callMain(['clone', 'http://localhost:3000/_github.com/foster/wasm-file-browser.git', 'wasm-file-browser']);
+  FS.chdir('./wasm-file-browser');
 
   postMessage({
-    command: 'ready'
-  });
-
-  FS.chdir('./testrepo');
-
-  postMessage({
-    command: 'cwd',
-    data: FS.cwd()
+    command: 'ready',
+    cwd: FS.cwd()
   });
 
   self.addEventListener('message', ({data: msg}: FileBrowserCommandEvent) => {
     switch (msg.command) {
-      case 'getFile':
+      case 'getFile': {
+        const {path} = FS.lookupPath(msg.fileName)
         const fileContents: string = FS.readFile(msg.fileName, { encoding: 'utf8' });
         const commit = getPathHistory(msg.fileName)
         postMessage({
           command: 'readfile',
-          fileName: 'README.md',
+          fileName: path.substring(ROOT_DIR_NAME.length  + 1),
           data: {
             commit: toCommitSummary(commit),
             contents: fileContents
           }
         });
         break;
-      case 'getDir':
-        const fs = FS
-        const {path, node} = FS.lookupPath(msg.dirName)
+      }
+      case 'getDir': {
+        const {path} = FS.lookupPath(msg.dirName)
         console.log(`listing ${path}`)
 
         postMessage({
           command: 'readdir',
-          data: fs.readdir(msg.dirName)
+          dirName: path.substring(ROOT_DIR_NAME.length + 1),
+          data: FS.readdir(msg.dirName)
             .filter((entry: string) => !entry.startsWith('.'))
             .map((entryName: string) => {
               const relativePath = msg.dirName !== '.' ? `${msg.dirName}/${entryName}` : entryName
@@ -73,6 +71,7 @@ Module.onRuntimeInitialized = () => {
             })
         });
         break;
+      }
     }
   });
 

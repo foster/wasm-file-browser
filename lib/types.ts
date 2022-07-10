@@ -28,16 +28,13 @@ export type FileTableMeta = {
 }
 
 export type FileBrowserReadyMessage = {
-  command: 'ready'
-}
-
-export type FileBrowserCwdMessage = {
-  command: 'cwd'
-  data: string
+  command: 'ready',
+  cwd: string
 }
 
 export type FileBrowserReadDirectoryMessage = {
-  command: 'readdir'
+  command: 'readdir',
+  dirName: string,
   data: FileBrowserEntry[]
 }
 
@@ -52,7 +49,6 @@ export type FileBrowserReadFileMessage = {
 
 export type FileBrowserMessage =
   | FileBrowserReadyMessage
-  | FileBrowserCwdMessage
   | FileBrowserReadDirectoryMessage
   | FileBrowserReadFileMessage
 export type FileBrowserMessageEvent = MessageEvent<FileBrowserMessage>
