@@ -11,7 +11,7 @@ const GitTreePage: NextPage = () => {
   const router = useRouter()
 
   // instantiate webworker and set up message listener
-  const { sendCommand, isReady } = useWorker((msg: FileBrowserMessage) => {
+  const [isReady, sendCommand ] = useWorker((msg: FileBrowserMessage) => {
     switch (msg.command) {
       case 'cwd':
         break

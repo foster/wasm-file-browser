@@ -4,12 +4,14 @@ import { FileBrowserCommand, FileBrowserMessage, FileBrowserMessageEvent } from 
 type WorkerCallbackFn = (msg: FileBrowserMessage) => void
 type WorkerCommandFn = (command: FileBrowserCommand) => void
 
-export interface WorkerClient {
-  isReady: boolean
+export type UseWorkerReturnVal = [
+  isReady: boolean,
   sendCommand: WorkerCommandFn
-}
+]
 
-interface WorkerClientInternal extends WorkerClient {
+interface WorkerClientInternal {
+  isReady: boolean,
+  sendCommand: WorkerCommandFn,
   subscribe(callback: WorkerCallbackFn): void
   unsubscribe(callback: WorkerCallbackFn): void
 }
@@ -53,7 +55,7 @@ const WorkerProvider: React.FC<WorkerProviderProps> = ({children}) => {
 }
 
 export {WorkerProvider}
-export default function useWorker(callback: WorkerCallbackFn): WorkerClient {
+export default function useWorker(callback: WorkerCallbackFn): UseWorkerReturnVal {
   const workerClient = useContext(WorkerContext)
 
   if (workerClient === null)
@@ -68,8 +70,8 @@ export default function useWorker(callback: WorkerCallbackFn): WorkerClient {
     }
   }, [])
 
-  return {
-    isReady: workerClient.isReady,
-    sendCommand: workerClient.sendCommand
-  }
+  return [
+    workerClient.isReady,
+    workerClient.sendCommand
+  ]
 }

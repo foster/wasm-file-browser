@@ -19,6 +19,7 @@ export type CommitSummary = {
   author: Author
   message: string
   messageFull: string
+  date: number // milliseconds since epoch (Date does not serialize correctly)
 }
 
 export type OnEntryClickFn = (entry :FileBrowserEntry) => void
@@ -43,7 +44,10 @@ export type FileBrowserReadDirectoryMessage = {
 export type FileBrowserReadFileMessage = {
   command: 'readfile'
   fileName: string
-  data: string
+  data: {
+    commit: CommitSummary,
+    contents: string
+  }
 }
 
 export type FileBrowserMessage =

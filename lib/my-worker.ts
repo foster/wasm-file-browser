@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { FileBrowserCommandEvent, FileBrowserEntry, FileBrowserMessage, FileBrowserMessageEvent } from './types';
+import { CommitSummary, FileBrowserCommandEvent, FileBrowserEntry, FileBrowserMessage, FileBrowserMessageEvent } from './types';
 
 // export empty object to force tsc to treat this as a module
 export default {};
@@ -46,11 +46,15 @@ Module.onRuntimeInitialized = () => {
   self.addEventListener('message', ({data: msg}: FileBrowserCommandEvent) => {
     switch (msg.command) {
       case 'getFile':
-        const fileContents = FS.readFile(msg.fileName, { encoding: 'utf8' });
+        const fileContents: string = FS.readFile(msg.fileName, { encoding: 'utf8' });
+        const commit = getPathHistory(msg.fileName)
         postMessage({
           command: 'readfile',
           fileName: 'README.md',
-          data: fileContents
+          data: {
+            commit: toCommitSummary(commit),
+            contents: fileContents
+          }
         });
         break;
       case 'getDir':
@@ -119,5 +123,19 @@ function parseCommitLog(logMessage: string): ParsedCommit {
     date: DateTime.fromFormat(dateFixed, DATE_FORMAT).toMillis(),
     messageFirst: logAsArray[4].trimStart(),
     messageFull: logAsArray.splice(4).map(s => s.trimStart()).join('\n').trimEnd()
+  }
+}
+
+function toCommitSummary(commit: ParsedCommit): CommitSummary {
+  return {
+    id: commit.commitId,
+    shortId: commit.commitId.substring(0, 7),
+    author: {
+      name: commit.author.split('<')[0].trim(),
+      email: commit.author.split(/<|>/)[1].trim()
+    },
+    message: commit.messageFirst,
+    messageFull: commit.messageFull,
+    date: commit.date
   }
 }
